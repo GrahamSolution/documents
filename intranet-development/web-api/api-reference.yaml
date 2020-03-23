@@ -14,20 +14,60 @@ servers:
       port:
         default: '8080'
 paths:
-  /auth:
-    get:
-      responses:
-        '200':
-          description: OK
+  /auth/signin:
     post:
+      summary: Login by loginId and Password.
+      requestBody: # ポストするオブジェクト
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login_id:
+                  type: string
+                  example: "test_user"
+                password:
+                  type: string
+                  example: "test_user123!"
       responses:
-        '200':
-          description: OK
+        '200': # HTTP status
+          description: Returns a single Object
+          content:
+            application/json: # レスポンスの形式指定
+              schema: 
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: JsonWebToken
+                  staffId:
+                    type: integer
+                    example: 1
+                  loginId:
+                    type: string
+                    example: admin8080
+                  role:
+                    type: integer
+                    example: ROLE_ADMIN
+                  expire:
+                    type: integer
+                    example: 180000000
   /staffs:
     get:
+      summary: Get all staffs.
+      description: Returns an array of Staff model
       responses:
-        '200':
-          description: OK
+        '200': # HTTP status
+          description: A JSON array of Staff entity
+          content:
+            application/json: # レスポンスの形式指定
+              schema: 
+                type: array
+                example: # サンプルデータ
+                  - id: 1
+                    name: John Doe
+                  - id: 2
+                    name: Jane Doe
     post:
       requestBody:
         content:
@@ -58,7 +98,7 @@ paths:
       responses:
         '204':
           description: OK
-  /staffs/{staff_id}/basic:
+  /staffs/{staff_id}/basic_info:
     get:
       parameters:
         - in: path
@@ -79,7 +119,7 @@ paths:
       responses:
         '200':
           description: OK
-  /staffs/{staff_id}/detail:
+  /staffs/{staff_id}/detail_info:
     get:
       parameters:
         - in: path
@@ -104,8 +144,8 @@ paths:
     get:
       parameters:
         - in: query
-          name: month
-          required: false
+          name: yearMonth
+          required: true
           schema:
             type: string
       responses:
