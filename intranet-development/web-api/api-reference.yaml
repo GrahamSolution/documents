@@ -16,133 +16,234 @@ servers:
 paths:
   /auth/signin:
     post:
-      summary: Login by loginId and Password.
+      summary: ログイン
+      description: ログインIDとパスワードでベーシック認証する
       requestBody: # ポストするオブジェクト
         content:
           application/json:
             schema:
               type: object
               properties:
-                login_id:
+                loginId:
+                  description: ログインID
                   type: string
                   example: "test_user"
                 password:
+                  description: パスワード
                   type: string
                   example: "test_user123!"
+              required:
+                - loginId
+                - password
       responses:
         '200': # HTTP status
-          description: Returns a single Object
+          description: フロント制御に必要な情報返却
           content:
             application/json: # レスポンスの形式指定
               schema: 
                 type: object
                 properties:
                   token:
+                    description: JsonWebToken
                     type: string
                     example: JsonWebToken
                   staffId:
+                    description: 社員ID
                     type: integer
                     example: 1
                   loginId:
+                    description: ログインID
                     type: string
                     example: admin8080
                   role:
-                    type: integer
+                    description: 権限
+                    type: string
                     example: ROLE_ADMIN
                   expire:
+                    description: トークン有効期限
                     type: integer
                     example: 180000000
   /staffs:
     get:
-      summary: Get all staffs.
-      description: Returns an array of Staff model
+      summary: 社員一覧取得
+      description: 社員一覧画面に表示する社員の情報を一覧取得する
       responses:
-        '200': # HTTP status
-          description: A JSON array of Staff entity
+        '200':
+          description: 社員情報一覧
           content:
             application/json: # レスポンスの形式指定
-              schema: 
+              schema:
                 type: array
-                example: # サンプルデータ
-                  - id: 1
-                    name: John Doe
-                  - id: 2
-                    name: Jane Doe
+                items:
+                  $ref: '#/components/schemas/attendance'
     post:
+      summary: 社員登録
+      description: 社員情報を新規追加する
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                mail_address:
-                  type: string
-                  example: "test@example.com"
-                login_id:
+                loginId:
+                  description: ログインID
                   type: string
                   example: "test_user"
+                mailAddress:
+                  description: メールアドレス
+                  type: string
+                  example: "test@example.com"
+                telephoneNumber:
+                  description: 電話番号
+                  type: string
+                  example: 010-2345-6789
+                role:
+                  description: 権限（1：ROLE_ADMIN、2：ROLE_MIDDLE、3：ROLE_USER）
+                  type: number
+                  example: 1
                 password:
+                  description: パスワード
                   type: string
                   example: "test_user123!"
+              required:
+                - loginId
+                - mailAddress
+                - password
       responses:
-        '204':
+        '200':
           description: OK
   /staffs/{staff_id}:
     delete:
+      summary: 社員削除
+      description: 退職した社員のIDを指定し、情報を削除する
       parameters:
         - in: path
           name: staff_id
           required: true
           schema:
-            type: integer
+            type: number
       responses:
         '204':
           description: OK
   /staffs/{staff_id}/basic_info:
     get:
+      summary: 社員基本情報取得
+      description: 社員の基本的な情報を取得する
       parameters:
         - in: path
           name: staff_id
           required: true
           schema:
-            type: integer
+            type: number
       responses:
-        '200':
-          description: OK
+        '200': # HTTP status
+          description: 社員基本情報
+          content:
+            application/json: # レスポンスの形式指定
+              schema: 
+                type: object
+                properties:
+                  name:
+                    description: 名前
+                    type: string
+                    example: 鱗滝左近次
+                  nameKana:
+                    description: 社員ID
+                    type: number
+                    example: 2
+                  enteredDate:
+                    description: 入社日
+                    type: string
+                    example: '2017-07-28'
+                  role:
+                    description: 権限
+                    type: string
+                    example: ROLE_ADMIN
+                  birthday:
+                    description: 誕生日
+                    type: string
+                    example: '1900-01-01'
+                  telephoneNumber:
+                    description: 電話番号
+                    type: string
+                    example: 010-2345-6789
+                  department:
+                    description: 部署
+                    type: string
+                    example: 開発部
+                  position:
+                    description: 役職
+                    type: string
+                    example: 課長
+                  grade:
+                    description: 階級
+                    type: string
+                    example: SILVER
     put:
+      summary: 社員基本情報編集
+      description: 社員の基本的な情報を編集する
       parameters:
         - in: path
           name: staff_id
           required: true
           schema:
-            type: integer
+            type: number
+      requestBody: # ポストするオブジェクト
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: 名前
+                  type: string
+                  example: 鱗滝左近次
+                nameKana:
+                  description: 社員ID
+                  type: number
+                  example: 2
+                enteredDate:
+                  description: 入社日
+                  type: string
+                  example: '2017-07-28'
+                role:
+                  description: 権限
+                  type: string
+                  example: ROLE_ADMIN
+                birthday:
+                  description: 誕生日
+                  type: string
+                  example: '1900-01-01'
+                telephoneNumber:
+                  description: 電話番号
+                  type: string
+                  example: 010-2345-6789
+                departmentId:
+                  description: 部署ID
+                  type: integer
+                  example: 1
+                positionId:
+                  description: 役職ID
+                  type: integer
+                  example: 1
+                gradeId:
+                  description: 階級ID
+                  type: integer
+                  example: 1
       responses:
         '200':
           description: OK
-  /staffs/{staff_id}/detail_info:
+  /attendances/{staff_id}:
     get:
+      summary: 勤怠情報取得
+      description: 指定月の勤怠情報を一覧で取得する
       parameters:
         - in: path
           name: staff_id
+          description: 対象の社員ID
           required: true
           schema:
-            type: integer
-      responses:
-        '200':
-          description: OK
-    put:
-      parameters:
-        - in: path
-          name: staff_id
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: OK
-  /attendances:
-    get:
-      parameters:
+            type: number
         - in: query
           name: yearMonth
           required: true
@@ -150,8 +251,157 @@ paths:
             type: string
       responses:
         '200':
-          description: OK
-    post:
+          description: 指定した月の勤怠情報一覧
+          content:
+            application/json: # レスポンスの形式指定
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/attendance'
+    put:
+      summary: 勤怠情報保存
+      description: 提出情報を受け取り保存する
+      parameters:
+        - name: staff_id
+          in: path
+          description: 対象の社員ID
+          required: true
+          schema:
+            type: number
+        - in: query
+          name: yearMonth
+          required: true
+          schema:
+            type: string
+      requestBody: # ポストするオブジェクト
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/attendance'
       responses:
         '200':
-          description: OK
+          description: 'No Response schema'
+  /attendances/{staff_id}/submit:
+    post:
+      summary: 勤怠情報提出
+      description: 受け取った提出内容と指定月の勤怠情報をファイル出力する
+      parameters:
+        - in: path
+          name: staff_id
+          description: 対象の社員ID
+          required: true
+          schema:
+            type: number
+        - in: query
+          name: yearMonth
+          required: true
+          schema:
+            type: string
+      requestBody: # ポストするオブジェクト
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerResidentTime:
+                  description: 客先常駐時間
+                  type: integer
+                  example: 160.0
+                totalWorkingTime:
+                  description: 総労働時間
+                  type: integer
+                  example: 160.0
+                totalNightTime:
+                  description: 総深夜勤務時間
+                  type: integer
+                  example: 0
+                totalOverTime:
+                  description: 総残業時間
+                  type: integer
+                  example: 0
+      responses:
+        '200':
+          description: 'No Response schema'
+        
+components:
+  schemas:
+    staff:
+      description: 社員情報
+      type: object
+      properties:
+        id:
+          description: 社員ID
+          type: number
+          example: 1
+        name:
+          description: 名前
+          type: string
+          example: 竈門炭治郎
+        department:
+          description: 部署
+          type: string
+          example: 営業部
+        position:
+          description: 役職
+          type: string
+          example: チームリーダー
+        grade:
+          description: 階級
+          type: string
+          example: GOLD
+        role:
+          description: 権限
+          type: string
+          example: ROLE_ADMIN
+    attendance:
+      description: 勤怠情報
+      type: object
+      properties:
+        day:
+          description: 日付
+          type: string
+          example: 01
+        startTime:
+          description: 開始時間
+          type: string
+          example: 09:00
+        endTime:
+          description: 終了時間
+          type: string
+          example: 17:30
+        restTime:
+          description: 休憩時間
+          type: integer
+          example: 1
+        absenceTypeId:
+          description: 欠勤種別（1：欠勤、2：有給、3：代休、4：忌引）
+          type: integer
+          example: 1
+        absenceReason:
+          description: 欠勤理由
+          type: string
+          example: なんとなく
+        workingTime:
+          description: 勤務時間
+          type: integer
+          example: 7.5
+        nightTime:
+          description: 深夜勤務時間
+          type: integer
+          example: 0
+        operatingExpenses:
+          description: 営業費
+          type: integer
+          example: 10000000
+        section:
+          description: 営業区間
+          type: string
+          example: 東京-新大阪
+        remarks:
+          description: 備考
+          type: string
+          example: 大阪出張
+      required:
+        - day
